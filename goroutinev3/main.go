@@ -1,5 +1,5 @@
 package main
-// import "fmt"
+import "fmt"
 
 var daftar_angka = []int{1,2,3,4,5,6,7,8,9,10}
 var inputChan = make(chan int)
@@ -11,8 +11,8 @@ func filter(inputChan <-chan int, evenChan chan<- int) {
 		if v % 2 == 0 {
 			evenChan <- v
 		}
-		close(evenChan)
 	}
+	close(evenChan)
 }
 
 func transform(evenChan <-chan int, squareChan chan<- int) {
@@ -23,14 +23,25 @@ func transform(evenChan <-chan int, squareChan chan<- int) {
 }
 
 
+func collect(squareChan <-chan int) {
+	total := 0
+	for v := range squareChan {
+		fmt.Println(v)
+		total += v
+	}
+	fmt.Println("Total:", total)
+}
 
 func main() {
 	go filter(inputChan, evenChan)
+	go transform(evenChan, squareChan)
+	go collect(squareChan)
 
-	go func() {
-		for _, v := range daftar_angka {
-			inputChan <- v
-		}
-		close(inputChan)
-	}()
+	for _, v := range daftar_angka {
+		inputChan <- v
+	}
+	close(inputChan)
+
+	var input string
+	fmt.Scanln(&input)
 }
